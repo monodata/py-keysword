@@ -16,9 +16,9 @@ from xml.dom.minidom import parseString
 
 __VERSION__ = "1.0"
 
-JAMF_HOST = getenv("JAMF_HOST")
-JAMF_USERNAME = getenv("JAMF_USERNAME")
-JAMF_PASSWORD = getenv("JAMF_PASSWORD")
+JAMF_HOST = "JSS_HOST"
+JAMF_USERNAME = "JSS_USER"
+JAMF_PASSWORD = "JSS_PASSWORD"
 
 
 """
@@ -28,6 +28,8 @@ Converts a computer name to a computer ID using the JAMF API
   :param name string
   :return id string
 """
+
+
 def getComputerID(name):
     auth = requests.auth.HTTPBasicAuth(JAMF_USERNAME, JAMF_PASSWORD)
     headers = {"Accept": "application/json"}
@@ -45,6 +47,8 @@ Gets a session token from the legacy pages to get access to the ajax API
   :param jar cookie jar
   :return token string
 """
+
+
 def getSessionToken(s, jar, id):
     resp = s.post('{}/?failover'.format(JAMF_HOST), cookies=jar, data={'username':JAMF_USERNAME, 'password':JAMF_PASSWORD, 'resetUsername':''})
     if resp.status_code != 200:
@@ -69,12 +73,14 @@ Connects to the JAMF JSS API and extracts a filevault key for the provided devic
   :param id string
   :param name string
 """
+
+
 def main(id, name):
     """ Create the cookie jar and session for requests """
     jar = cookielib.CookieJar()
     s = requests.Session()
     s.cookies = jar
-    
+
     """ Get the computer id if a hostname was provided """
     if len(name) > 0:
         id = getComputerID(name)
@@ -98,7 +104,7 @@ def main(id, name):
         "Connection": "keep-alive",
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.81 Safari/537.36",
         "Referer": "{}/legacy/computers.html?id={}&o=r&v=management".format(JAMF_HOST, id)
-        })
+    })
 
     # TODO: add error checking here
     e = parseString(resp.content)
@@ -108,7 +114,7 @@ def main(id, name):
                 print n.data
                 return
 
-    """ If we couldn't find the key, print """"
+    """ If we couldn't find the key, print """
     print "Unable to find filevault key"
 
 
@@ -131,9 +137,9 @@ if __name__ == "__main__":
         print "Please provide only one computer id with -id or with -name, but not both"
         exit()
 
-    if len(getenv("JAMF_USERNAME")) == 0 \
-            or len(getenv("JAMF_USERNAME")) == 0 \
-            or len(getenv("JAMF_HOST")) == 0:
+    if len("JAMF_USERNAME") == 0 \
+            or len("JAMF_USERNAME") == 0 \
+            or len("JAMF_HOST") == 0:
         print "Please set your environment variables appropriately"
         exit()
 
